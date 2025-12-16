@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@gmail.com',
             'password' => '12345678',
             'foto' => 'coba.JPG',
+            'status' => 'aktif'
         ]);
     }
 }

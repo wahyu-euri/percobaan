@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "../../api/api";
+import api from "../../api/api";
 import logo from "../../assets/image/banima.png";
 
 function Login() {
@@ -12,12 +12,12 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/login", {
-        email,
-        password,
-      });
+      const response = await api.post("/login", { email, password });
       localStorage.setItem("token", response.data.token);
-      navigate("/admin/pengguna");
+
+      await api.get("/me");
+
+      navigate("/admin/dasbor");
     } catch (err) {
       seterror(err.response?.data?.message);
     }

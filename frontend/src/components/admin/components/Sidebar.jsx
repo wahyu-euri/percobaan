@@ -25,13 +25,13 @@ export default function Sidebar() {
       id: 1,
       label: "Dasbor",
       icon: <LayoutDashboard size={18} />,
-      path: "/admin/dashboard",
+      path: "/admin/dasbor",
     },
     {
       id: 2,
-      label: "Proyek",
+      label: "Portofolio",
       icon: <FolderKanban size={18} />,
-      path: "/admin/proyek",
+      path: "/admin/portofolio",
     },
     {
       id: 3,
