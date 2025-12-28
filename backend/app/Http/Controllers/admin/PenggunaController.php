@@ -5,68 +5,122 @@ namespace App\Http\Controllers\admin;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class PenggunaController extends Controller
 {
-    public function index()
+    /**
+     * GET /api/users
+     * Ambil semua user
+     */
+    public function index(Request $request)
     {
-        return response()->json(User::all(), 200);
+        $query = User::select('id', 'name', 'email', 'status', 'foto');
+
+        if ($request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->status && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        $perPage = $request->per_page ?? 10;
+
+        return response()->json(
+            $query->orderBy('name', 'asc')->paginate($perPage)
+        );
     }
 
+
+
+    /**
+     * POST /api/users
+     * Tambah user
+     */
     public function store(Request $request)
     {
-        $request->validate([
-            'foto' => 'required|string',
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6',
+            'status'   => 'required|in:aktif,tidak_aktif',
+            'foto'    => 'nullable|image|max:10000',
         ]);
 
-        $user = User::create([
-            'foto' => $request->foto,
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
-        ]);
+        if ($request->hasFile('foto')) {
+            $validated['foto'] = $request->file('foto')->store('users', 'public');
+        }
+
+        $validated['password'] = Hash::make($validated['password']);
+
+        $user = User::create($validated);
 
         return response()->json([
-            "message" => "Admin baru berhasil ditambahkan",
-            "data" => $user
+            'message' => 'User berhasil ditambahkan',
+            'data'    => $user
         ], 201);
-
     }
 
+    /**
+     * PUT /api/users/{id}
+     * Update user
+     */
     public function update(Request $request, $id)
     {
-        $user = User::FindOrFail($id);
+        $user = User::findOrFail($id);
 
-        $request->validate([
-            'foto' => 'sometimes|string',
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|string|email|max:255|unique:users,email,'.$id,
-            'password' => 'sometimes|string|min:6',
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'password' => 'nullable|min:6',
+            'status'   => 'required|in:aktif,tidak_aktif',
+            'foto'    => 'nullable|image|max:10000',
         ]);
 
-        $user->update([
-            'foto' => $request->foto ?? $user->foto,
-            'name' => $request->name ?? $user->name,
-            'email' => $request->email ?? $user->email,
-            'password' => $request->password ?? $user->password,
-        ]);
+        // update foto
+        if ($request->hasFile('foto')) {
+            if ($user->foto) {
+                Storage::disk('public')->delete($user->foto);
+            }
+            $validated['foto'] = $request->file('foto')->store('users', 'public');
+        }
+
+        // update password kalau diisi
+        if (!empty($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
 
         return response()->json([
-            "message" => "Data pengguna berhasil diperbarui",
-            "data" => $user
-        ], 200);
+            'message' => 'User berhasil diupdate',
+            'data'    => $user
+        ]);
     }
 
+    /**
+     * DELETE /api/users/{id}
+     * Hapus user
+     */
     public function destroy($id)
     {
-        $user = User::FindOrFail($id);
+        $user = User::findOrFail($id);
+
+        if ($user->foto) {
+            Storage::disk('public')->delete($user->foto);
+        }
+
         $user->delete();
 
         return response()->json([
-            "message" => "Pengguna berhasil dihapus"
-        ], 200);
+            'message' => 'User berhasil dihapus'
+        ]);
     }
 }

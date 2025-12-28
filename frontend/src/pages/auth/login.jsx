@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/api";
 import logo from "../../assets/image/banima.png";
+import { Info } from "lucide-react";
 
 function Login() {
   const [email, setemail] = useState("");
@@ -46,9 +47,9 @@ function Login() {
                 value={email}
                 onChange={(e) => setemail(e.target.value)}
                 required
-                className="border border-gray-500 rounded-sm border-danger w-full pl-2"
+                className="border border-gray-500 rounded-sm border-danger w-full pl-2 mb-1"
               />
-              {error && <p>{error}</p>}
+              {error && <p className="flex items-center gap-1 text-sm text-red-600"><Info size={15}/>{error}</p>}
             </div>
             <div className="mb-5 text-black w-full">
               <label className="font-bebas-neue tracking-wider">
@@ -59,9 +60,9 @@ function Login() {
                 value={password}
                 onChange={(e) => setpassword(e.target.value)}
                 required
-                className="border border-gray-500 rounded-sm border-danger w-full pl-2 "
+                className="border border-gray-500 rounded-sm border-danger w-full pl-2 mb-1"
               />
-              {error && <p>{error}</p>}
+              {error && <p className="flex items-center gap-1 text-sm text-red-600"><Info size={15}/>{error}</p>}
             </div>
             <div className="flex flex-row justify-start items-center w-full mb-10 text-black">
               <div className="flex flex-col w-full">

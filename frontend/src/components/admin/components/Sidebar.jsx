@@ -71,7 +71,7 @@ export default function Sidebar() {
       icon: <Bell size={18} />,
       path: "/admin/informasi",
     },
-    { id: 11, label: "Keluar", icon: <LogOut size={18} />, path: "/logout" },
+    { id: 11, label: "Keluar", icon: <LogOut size={18} />, path: "/login" },
   ];
 
   const menuUtama = menuItems.filter((item) => item.id !== 11);

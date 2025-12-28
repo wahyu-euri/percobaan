@@ -1,176 +1,193 @@
-import { useState } from "react";
-import { PencilLine, Trash2, Search } from "lucide-react";
-import UserForm from "../forms/UserForm";
+import { Search, PencilLine, Trash2 } from "lucide-react";
 
-export default function UserTable({ users }) {
-  const [showForm, setShowForm] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+export default function UserTable({
+  users,
+  page,
+  lastPage,
+  perPage,
+  loading,
+  search,
+  status,
+  onSearchChange,
+  onStatusChange,
+  onPageChange,
+  onAdd,
+  onEdit,
+  onDelete,
+}) {
+  const pagesToShow = 5;
+  let start = Math.max(1, page - Math.floor(pagesToShow / 2));
+  let end = start + pagesToShow - 1;
 
-  const [showData, setShowData] = useState(5);
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
+  if (end > lastPage) {
+    end = lastPage;
+    start = Math.max(1, end - pagesToShow + 1);
+  }
 
-  // FILTER + LIMIT
-  const filteredUsers = users
-    .filter((u) => u.name.toLowerCase().includes(search.toLowerCase()))
-    .filter((u) => {
-      if (status === "all") return true;
-      return u.status === status;
-    })
-    .slice(0, showData);
+  const pages = [];
+  for (let p = start; p <= end; p++) pages.push(p);
 
   return (
-    <>
-      <div className="bg-white rounded-xl shadow p-10 text-[#2b2b2b]">
-        {/* CONTROL */}
-        <div className="flex flex-wrap justify-between items-center mb-6 text-[#2b2b2b]">
-          {/* Show data */}
-          <div className="flex items-center gap-2">
-            <span>Tampilkan</span>
-            <select
-              value={showData}
-              onChange={(e) => setShowData(Number(e.target.value))}
-              className="border rounded px-2 py-1"
-            >
-              {[3, 5, 7, 10].map((n) => (
-                <option key={n} value={n}>
-                  {n}
-                </option>
-              ))}
-            </select>
-            <span>data</span>
-          </div>
+    <div className="bg-white rounded-2xl shadow-lg p-6 text-sm text-[#2b2b2b]">
 
-          {/* Search */}
-          <div className="relative w-full max-w-sm">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      {/* CONTROLS */}
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-6">
+        <div className="flex items-center gap-3">
+          {/* per page */}
+          <span>Tampilka</span>
+          <select
+            value={perPage}
+            onChange={(e) => onPageChange(1, Number(e.target.value))}
+            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+          >
+            <option value={3}>3</option>
+            <option value={5}>5</option>
+            <option value={10}>10</option>
+          </select>
+          <span className="mr-5">Data</span>
+
+          {/* search */}
+          <div className="relative">
+            <Search className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
             <input
-              type="search"
-              placeholder="Cari pengguna..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full border rounded-md pl-9 pr-3 py-2 text-sm text-[#2b2b2b]"
+              onChange={(e) => onSearchChange(e.target.value)}
+              placeholder="Cari pengguna..."
+              className="pl-8 border border-gray-300 rounded px-2 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
             />
           </div>
 
-          {/* Status */}
+          {/* status filter */}
           <select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border rounded px-2 py-1 mr-[45rem]"
+            onChange={(e) => onStatusChange(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-200"
           >
             <option value="all">Semua Status</option>
             <option value="aktif">Aktif</option>
-            <option value="nonaktif">Nonaktif</option>
+            <option value="tidak_aktif">Tidak Aktif</option>
           </select>
-
-          {/* Tambah */}
-          <button
-            onClick={() => {
-              setSelectedUser(null);
-              setShowForm(true);
-            }}
-            className="px-3 py-2 rounded-lg bg-[#ebf9f1] border border-[#1b7a4a] text-sm hover:bg-green-100"
-          >
-            + Tambah
-          </button>
         </div>
 
-        {/* TABLE */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-[#2b2b2b]">
-            <thead className="bg-gray-100 text-left text-sm">
-              <tr>
-                <th className="p-3 text-center">No</th>
-                <th className="p-3">Foto</th>
-                <th className="p-3">Nama</th>
-                <th className="p-3">Email</th>
-                <th className="p-3">Status</th>
-                <th className="p-3 text-center">Aksi</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan="6" className="text-center py-6 text-gray-500">
-                    Data tidak ditemukan
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((u, index) => (
-                  <tr key={u.id} className="border-t hover:bg-gray-50">
-                    <td className="p-3 text-center">{index + 1}</td>
-                    <td className="p-3">
-                      <img
-                        src={
-                          u.foto
-                            ? `http://127.0.0.1:8000/storage/${u.foto}`
-                            : "/default-avatar.png"
-                        }
-                        alt={u.name}
-                        className="w-10 h-10 rounded-full object-cover"
-                      />
-                    </td>
-                    <td className="p-3">{u.name}</td>
-                    <td className="p-3">{u.email}</td>
-                    <td className="p-3">
-                      <span
-                        className={`px-2 py-1 rounded text-xs font-medium
-                          ${
-                            u.status === "aktif"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                      >
-                        {u.status}
-                      </span>
-                    </td>
-                    <td className="flex flex-row justify-center items-center p-5 gap-3">
-                      <button
-                        onClick={() => {
-                          setSelectedUser(u);
-                          setShowForm(true);
-                        }}
-                        className="text-blue-500 hover:text-blue-700"
-                      >
-                        <PencilLine size={18} />
-                      </button>
-                      <button className="text-red-500 hover:text-red-700">
-                        <Trash2 size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+        <button
+          onClick={onAdd}
+          className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+        >
+          + Tambah
+        </button>
       </div>
 
-      {/* MODAL */}
-      {showForm && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded-xl p-4 text-[#2b2b2b]">
-            <UserForm
-              initialData={selectedUser}
-              onSubmit={(data) => {
-                selectedUser
-                  ? console.log("EDIT", data)
-                  : console.log("TAMBAH", data);
-                setShowForm(false);
-              }}
-            />
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="w-full table-auto border-separate border-spacing-y-1">
+          <thead className="bg-gray-50 text-gray-600 font-medium">
+            <tr>
+              <th className="py-2 px-3 text-left">No</th>
+              <th className="py-2 px-3 text-left">Profil</th>
+              <th className="py-2 px-3 text-left">Nama pengguna</th>
+              <th className="py-2 px-3 text-left">Email</th>
+              <th className="py-2 px-3 text-left">Status</th>
+              <th className="py-2 px-3 text-center">Aksi</th>
+            </tr>
+          </thead>
 
-            <button
-              onClick={() => setShowForm(false)}
-              className="w-full mt-2 text-sm text-[#2b2b2b] opacity-70 hover:opacity-100"
-            >
-              Batal
-            </button>
-          </div>
-        </div>
-      )}
-    </>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="6" className="text-center py-8 text-gray-500">
+                  Loading...
+                </td>
+              </tr>
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan="6" className="text-center py-6 text-gray-500">
+                  Data tidak ditemukan
+                </td>
+              </tr>
+            ) : (
+              users.map((u, i) => (
+                <tr
+                  key={u.id}
+                  className="bg-white hover:bg-gray-50 border-b"
+                >
+                  <td className="py-3 px-3">
+                    {(page - 1) * perPage + i + 1}.
+                  </td>
+
+                  <td className="py-2 px-3">
+                    <img
+                      src={
+                        u.foto
+                          ? `http://127.0.0.1:8000/storage/${u.foto}`
+                          : "/default-avatar.png"
+                      }
+                      alt="avatar"
+                      className="w-8 h-8 rounded-full object-cover"
+                    />
+                  </td>
+
+                  <td className="py-3 px-3 font-medium">{u.name}</td>
+                  <td className="py-3 px-3">{u.email}</td>
+
+                  <td className="py-3 px-3">
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full ${
+                        u.status === "aktif"
+                          ? "bg-green-100 text-green-600"
+                          : "bg-red-100 text-red-600"
+                      }`}
+                    >
+                      {u.status === "aktif" ? "Aktif" : "Tidak Aktif"}
+                    </span>
+                  </td>
+
+                  <td className="py-3 px-3 text-center flex justify-center gap-3">
+                    <button onClick={() => onEdit(u)}>
+                      <PencilLine className="w-5 h-5 text-blue-500" />
+                    </button>
+                    <button onClick={() => onDelete(u)}>
+                      <Trash2 className="w-5 h-5 text-red-500" />
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* PAGINATION (5 angka) */}
+      <div className="flex justify-center gap-2 mt-6">
+        <button
+          onClick={() => onPageChange(page - 1, perPage)}
+          disabled={page === 1}
+          className="px-3 py-1 rounded text-sm border disabled:opacity-50"
+        >
+          Sebelumya
+        </button>
+
+        {pages.map((p) => (
+          <button
+            key={p}
+            onClick={() => onPageChange(p, perPage)}
+            className={`px-3 py-1 rounded-full text-sm border ${
+              p === page
+                ? "bg-indigo-600 text-white border-indigo-600"
+                : "text-gray-600 border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+
+        <button
+          onClick={() => onPageChange(page + 1, perPage)}
+          disabled={page === lastPage}
+          className="px-3 py-1 rounded text-sm border disabled:opacity-50"
+        >
+          Selanjutnya
+        </button>
+      </div>
+    </div>
   );
 }
