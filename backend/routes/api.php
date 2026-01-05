@@ -4,6 +4,7 @@ use App\Http\Controllers\admin\PenggunaController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,3 +39,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/admin/pengguna/{id}', [PenggunaController::class, 'destroy']);
 });
 
+//Halaman Klien
+Route::get('/admin/klien', [ClientController::class, 'index']);
+Route::post('/admin/klien', [ClientController::class, 'store']);
+Route::post('/admin/klien/{client}', [ClientController::class, 'update']);
+Route::delete('/admin/klien/{client}', [ClientController::class, 'destroy']);
+Route::patch('/admin/klien/{client}/toggle', [ClientController::class, 'toggleStatus']);

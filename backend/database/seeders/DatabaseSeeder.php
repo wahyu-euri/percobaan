@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
+use App\Models\Client;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,7 +14,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
 
         \App\Models\User::factory()->create([
             'name' => 'admin',
@@ -21,6 +21,13 @@ class DatabaseSeeder extends Seeder
             'password' => '12345678',
             'foto' => 'coba.JPG',
             'status' => 'aktif'
+        ]);
+
+        \App\Models\Client::factory()->create([
+            'nama_klien' => 'Banima Tech',
+            'website' => 'https://banimatech.com',
+            'foto' => null,
+            'is_active' => true
         ]);
     }
 }

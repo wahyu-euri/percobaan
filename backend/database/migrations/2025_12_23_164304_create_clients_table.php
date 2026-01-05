@@ -13,6 +13,10 @@ return new class extends Migration
     {
         Schema::create('clients', function (Blueprint $table) {
             $table->id();
+            $table->string('nama_klien');
+            $table->string('website')->nullable();
+            $table->string('foto')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }
